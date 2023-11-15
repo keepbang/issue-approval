@@ -3,6 +3,8 @@ const github = require("@actions/github");
 
 async function run() {
 
+  const limitPendingTime = 10 * 60 * 1000;
+  const limitTime = new Date().setTime(a.getTime() + limitPendingTime)
   const approvedWords = ["yes", "y", "approve"];
   const deniedWords = ["denied", "deny", "no", "n"];
 
@@ -13,8 +15,6 @@ async function run() {
       body: body,
       assignees: approvers,
     })
-    core.info(`create issue ${JSON.stringify(issue.data)}`);
-
     return issue.data.number;
   }
 
@@ -24,7 +24,17 @@ async function run() {
           ...github.context.repo,
           issue_number: issueNumber
         });
-    return comments;
+    return comments.data;
+  }
+
+  async function closedIssue(octokit, issueNumber) {
+    const closedIssue = await octokit.request(
+        'PATCH /repos/{owner}/{repo}/issues/{issue_number}', {
+          ...github.context.repo,
+          issue_number: issueNumber,
+          state: 'closed'
+        });
+    return closedIssue.data.number;
   }
 
   try {
@@ -42,11 +52,17 @@ async function run() {
     let approve = true;
 
     do {
+      if (Date.now() > limitTime) {
+        const closedIssueNumber = await closedIssue(octokit, issueNumber);
+        core.info(`Issue is closed : ${closedIssueNumber}`);
+        core.setFailed("denied workflow");
+      }
+
       const comments = await getComments(octokit, issueNumber);
 
-      if (comments.data.length) {
+      if (comments.length) {
 
-        const lastComment = comments.data[comments.length - 1];
+        const lastComment = comments[comments.length - 1];
 
         const word = lastComment.body;
 
@@ -62,10 +78,11 @@ async function run() {
 
       }
 
-
     } while (approve)
 
-    core.setOutput("issue", JSON.stringify(issue.data));
+    const closedIssueNumber = await closedIssue(octokit, issueNumber);
+    core.info(`Issue is closed : ${closedIssueNumber}`);
+
   } catch (error) {
     core.setFailed(error.message);
   }
