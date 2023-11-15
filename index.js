@@ -13,7 +13,9 @@ async function run() {
       body: body,
       assignees: approvers,
     })
-    return issue.number;
+    core.info(`create issue ${JSON.stringify(issue.data)}`);
+
+    return issue.data.number;
   }
 
   async function getComments(octokit, issueNumber) {
@@ -42,18 +44,18 @@ async function run() {
     do {
       const comments = await getComments(octokit, issueNumber);
 
-      if (comments.length) {
+      if (comments.data.length) {
 
-        const lastComment = comments[comments.length - 1];
+        const lastComment = comments.data[comments.length - 1];
 
         const word = lastComment.body;
 
         if (approvedWords.includes(word)) {
-          // 승인
+          // approve
           approve = false;
           core.info(`approve issue ${issueNumber}`);
         } else if (deniedWords.includes(word)) {
-          // 거부
+          // denied
           approve = false;
           core.setFailed("denied workflow");
         }
