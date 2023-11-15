@@ -1,0 +1,15 @@
+name: Github issue approval
+description: 'Open github issue and approval'
+inputs:
+  approvers:
+    description: Required approvers
+    required: true
+  secret-token:
+    description: Secret
+    required: true
+runs:
+  using: 'node20'
+  main: 'index.js'
+branding:
+  icon: 'alert-triangle'
+  color: 'yellow'
