@@ -4,7 +4,7 @@ const github = require("@actions/github");
 async function run() {
 
   const limitPendingTime = 10 * 60 * 1000;
-  const limitTime = new Date().setTime(a.getTime() + limitPendingTime)
+  const limitTime = Date.now() + limitPendingTime;
   const approvedWords = ["yes", "y", "approve"];
   const deniedWords = ["denied", "deny", "no", "n"];
 
