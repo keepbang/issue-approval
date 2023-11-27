@@ -9,3 +9,19 @@
 ## inputs
 - `approvers` : Approve github user name
 - `secret-token` : Auto-generated github secret token ${ secrets.GITHUB_TOKEN }
+
+
+## used
+```
+  # wait for approval
+  manual-approval:
+    runs-on: ubuntu-20.04(or self-hosted)
+    steps:
+      - name: Wait approval
+        uses: keepbang/issue-approval@v1.0.4
+        with:
+          secret-token: ${{ secrets.GITHUB_TOKEN }}
+          approvers: ${{ env.list_of_username }}
+  # wait for approval
+```
+
